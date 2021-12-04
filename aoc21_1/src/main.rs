@@ -5,7 +5,6 @@ const FPS: [&str; 2] = ["./data/test.txt", "./data/input.txt"];
 fn main() {
     for fp in FPS {
         let depths = fs::read_to_string(fp).expect("Something went wrong reading the file");
-
         let depths: Vec<u32> = depths.lines().map(|x| x.parse::<u32>().unwrap()).collect();
 
         println!(
