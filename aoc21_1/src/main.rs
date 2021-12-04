@@ -1,6 +1,6 @@
 use std::fs;
 
-const FPS: [&str; 2] = ["./src/data/test.txt", "./src/data/input.txt"];
+const FPS: [&str; 2] = ["./data/test.txt", "./data/input.txt"];
 
 fn main() {
     for fp in FPS {
