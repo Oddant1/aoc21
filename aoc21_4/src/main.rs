@@ -22,7 +22,7 @@ fn new_board() -> Board {
 fn main() {
     for fp in FPS {
         let contents = fs::read_to_string(fp).expect("Something went wrong reading the file");
-        let mut contents = contents.split("\n");
+        let mut contents = contents.lines();
 
         let draws: Vec<u32> = contents
             .next()
