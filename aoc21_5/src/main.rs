@@ -46,17 +46,17 @@ fn main() {
         println!(
             "Result 1 for file at path {} is {}",
             fp,
-            do_work_1(lines, board, num_cols, 1)
+            do_work(lines, board, num_cols, 1)
         );
         println!(
             "Result 2 for file at path {} is {}",
             fp,
-            do_work_1(lines2, board2, num_cols, 2)
+            do_work(lines2, board2, num_cols, 2)
         );
     }
 }
 
-fn do_work_1(lines: Vec<Line>, mut board: Board, num_cols: usize, part: usize) -> usize {
+fn do_work(lines: Vec<Line>, mut board: Board, num_cols: usize, part: usize) -> usize {
     let mut num_over_1 = 0;
 
     let mut start = (0, 0);
