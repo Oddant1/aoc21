@@ -10,11 +10,10 @@ fn main() {
         let contents = fs::read_to_string(fp).expect("Something went wrong reading the file");
         let contents: Vec<&str> = contents.lines().collect();
 
-        let mut lines: Vec<Line> = Vec::new();
+        let mut lines1: Vec<Line> = Vec::new();
         let mut lines2: Vec<Line> = Vec::new();
 
         let board: Board;
-        let board2: Board;
 
         let mut num_rows = 0;
         let mut num_cols = 0;
@@ -28,123 +27,90 @@ fn main() {
                 (point1[0].parse().unwrap(), point1[1].parse().unwrap()),
                 (point2[0].parse().unwrap(), point2[1].parse().unwrap()),
             );
-            lines.push(line);
-            lines2.push(line);
+
+            if line.0 .0 == line.1 .0 || line.0 .1 == line.1 .1 {
+                lines1.push(line);
+            } else {
+                lines2.push(line);
+            }
         }
 
-        for line in &lines {
+        for line in &lines1 {
             num_rows = cmp::max(num_rows, cmp::max(line.0 .1, line.1 .1));
             num_cols = cmp::max(num_cols, cmp::max(line.0 .0, line.1 .0));
         }
 
+        for line in &lines2 {
+            num_rows = cmp::max(num_rows, cmp::max(line.0 .1, line.1 .1));
+            num_cols = cmp::max(num_cols, cmp::max(line.0 .0, line.1 .0));
+        }
+
+        // Add one b/c 0 based indexing
         num_rows += 1;
         num_cols += 1;
-
         board = vec![0; num_rows * num_cols];
-        board2 = vec![0; num_rows * num_cols];
 
-        println!(
-            "Result 1 for file at path {} is {}",
-            fp,
-            do_work(lines, board, num_cols, 1)
-        );
-        println!(
-            "Result 2 for file at path {} is {}",
-            fp,
-            do_work(lines2, board2, num_cols, 2)
-        );
+        let counts = do_work(lines1, lines2, board, num_cols);
+        println!("Result 1 for file at path {} is {}", fp, counts.0);
+        println!("Result 2 for file at path {} is {}", fp, counts.1);
     }
 }
 
-fn do_work(lines: Vec<Line>, mut board: Board, num_cols: usize, part: usize) -> usize {
-    let mut num_over_1 = 0;
+fn do_work(
+    lines1: Vec<Line>,
+    lines2: Vec<Line>,
+    mut board: Board,
+    num_cols: usize,
+) -> (usize, usize) {
+    let mut num_over_1: (usize, usize) = (0, 0);
 
-    let mut start = (0, 0);
-    let mut end = (0, 0);
-
-    for line in lines {
-        if part == 1 && (line.0 .0 != line.1 .0) && (line.0 .1 != line.1 .1) {
-            continue;
-        }
-
+    for line in lines1 {
+        // Only one of these will be non-zero
         let x_dist = (line.1 .0 as i32 - line.0 .0 as i32).abs() as usize;
         let y_dist = (line.1 .1 as i32 - line.0 .1 as i32).abs() as usize;
-        let mut found = false;
 
-        match line.0 .0.cmp(&line.1 .0) {
-            std::cmp::Ordering::Less => {
-                start.0 = line.0 .0;
-                start.1 = line.0 .1;
+        let x_mult: isize = if line.0 .0 > line.1 .0 { -1 } else { 1 };
+        let y_mult: isize = if line.0 .1 > line.1 .1 { -1 } else { 1 };
 
-                end.0 = line.1 .0;
-                end.1 = line.1 .1;
-
-                found = true;
-            }
-            std::cmp::Ordering::Equal => {}
-            std::cmp::Ordering::Greater => {
-                start.0 = line.1 .0;
-                start.1 = line.1 .1;
-
-                end.0 = line.0 .0;
-                end.1 = line.0 .1;
-
-                found = true;
-            }
-        }
-
-        if !found {
-            match line.0 .1.cmp(&line.1 .1) {
-                std::cmp::Ordering::Less => {
-                    start.0 = line.0 .0;
-                    start.1 = line.0 .1;
-
-                    end.0 = line.1 .0;
-                    end.0 = line.1 .1
-                }
-                std::cmp::Ordering::Equal => {}
-                std::cmp::Ordering::Greater => {
-                    start.0 = line.1 .0;
-                    start.1 = line.1 .1;
-
-                    end.0 = line.0 .0;
-                    end.1 = line.0 .1;
-                }
-            }
-        }
-
-        if x_dist > 0 && y_dist > 0 && part == 2 {
-            let mut x_mult: isize = 1;
-            let mut y_mult: isize = 1;
-
-            if start.0 > end.0 {
-                x_mult = -1;
-            }
-            if start.1 > end.1 {
-                y_mult = -1;
-            }
-
-            for i in 0..x_dist + 1 {
-                board[((start.0 as isize + i as isize * x_mult) * num_cols as isize
-                    + start.1 as isize
-                    + i as isize * y_mult) as usize] += 1;
-            }
-        } else if x_dist > 0 {
+        if x_dist > 0 {
             for x in 0..x_dist + 1 {
-                board[(start.0 + x) * num_cols + start.1] += 1;
+                board[((line.0 .0 as isize + x as isize * x_mult) * num_cols as isize
+                    + line.0 .1 as isize) as usize] += 1;
             }
         } else if y_dist > 0 {
             for y in 0..y_dist + 1 {
-                board[start.0 * num_cols + start.1 + y] += 1;
+                board[(line.0 .0 as isize * num_cols as isize
+                    + line.0 .1 as isize
+                    + y as isize * y_mult) as usize] += 1;
             }
         }
     }
 
-    for space in board {
-        if space > 1 {
-            num_over_1 += 1;
+    calc_board(&board, &mut num_over_1.0);
+
+    for line in lines2 {
+        // x and y dist are the same for diagonals, this calculates the x
+        let dist = (line.1 .0 as i32 - line.0 .0 as i32).abs() as usize;
+
+        let x_mult: isize = if line.0 .0 > line.1 .0 { -1 } else { 1 };
+        let y_mult: isize = if line.0 .1 > line.1 .1 { -1 } else { 1 };
+
+        for i in 0..dist + 1 {
+            board[((line.0 .0 as isize + i as isize * x_mult) * num_cols as isize
+                + line.0 .1 as isize
+                + i as isize * y_mult) as usize] += 1;
         }
     }
 
+    calc_board(&board, &mut num_over_1.1);
+
     num_over_1
+}
+
+fn calc_board(board: &[usize], dest: &mut usize) {
+    for space in board {
+        if *space > 1 {
+            *dest += 1;
+        }
+    }
 }
