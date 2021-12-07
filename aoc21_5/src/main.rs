@@ -2,8 +2,8 @@ use std::cmp;
 use std::fs;
 
 const FPS: [&str; 2] = ["./data/test.txt", "./data/input.txt"];
-type Board = Vec<usize>;
-type Line = ((usize, usize), (usize, usize));
+type Board = Vec<isize>;
+type Line = ((isize, isize), (isize, isize));
 
 fn main() {
     for fp in FPS {
@@ -48,7 +48,7 @@ fn main() {
         // Add one b/c 0 based indexing
         num_rows += 1;
         num_cols += 1;
-        board = vec![0; num_rows * num_cols];
+        board = vec![0; (num_rows * num_cols) as usize];
 
         let counts = do_work(lines1, lines2, board, num_cols);
         println!("Result 1 for file at path {} is {}", fp, counts.0);
@@ -60,28 +60,25 @@ fn do_work(
     lines1: Vec<Line>,
     lines2: Vec<Line>,
     mut board: Board,
-    num_cols: usize,
+    num_cols: isize,
 ) -> (usize, usize) {
     let mut num_over_1: (usize, usize) = (0, 0);
 
     for line in lines1 {
         // Only one of these will be non-zero
-        let x_dist = (line.1 .0 as i32 - line.0 .0 as i32).abs() as usize;
-        let y_dist = (line.1 .1 as i32 - line.0 .1 as i32).abs() as usize;
+        let x_dist = (line.1 .0 - line.0 .0).abs();
+        let y_dist = (line.1 .1 - line.0 .1).abs();
 
         let x_mult: isize = if line.0 .0 > line.1 .0 { -1 } else { 1 };
         let y_mult: isize = if line.0 .1 > line.1 .1 { -1 } else { 1 };
 
         if x_dist > 0 {
             for x in 0..x_dist + 1 {
-                board[((line.0 .0 as isize + x as isize * x_mult) * num_cols as isize
-                    + line.0 .1 as isize) as usize] += 1;
+                board[((line.0 .0 + x * x_mult) * num_cols + line.0 .1) as usize] += 1;
             }
         } else if y_dist > 0 {
             for y in 0..y_dist + 1 {
-                board[(line.0 .0 as isize * num_cols as isize
-                    + line.0 .1 as isize
-                    + y as isize * y_mult) as usize] += 1;
+                board[(line.0 .0 * num_cols + line.0 .1 + y * y_mult) as usize] += 1;
             }
         }
     }
@@ -90,15 +87,13 @@ fn do_work(
 
     for line in lines2 {
         // x and y dist are the same for diagonals, this calculates the x
-        let dist = (line.1 .0 as i32 - line.0 .0 as i32).abs() as usize;
+        let dist = (line.1 .0 - line.0 .0).abs();
 
-        let x_mult: isize = if line.0 .0 > line.1 .0 { -1 } else { 1 };
-        let y_mult: isize = if line.0 .1 > line.1 .1 { -1 } else { 1 };
+        let x_mult = if line.0 .0 > line.1 .0 { -1 } else { 1 };
+        let y_mult = if line.0 .1 > line.1 .1 { -1 } else { 1 };
 
         for i in 0..dist + 1 {
-            board[((line.0 .0 as isize + i as isize * x_mult) * num_cols as isize
-                + line.0 .1 as isize
-                + i as isize * y_mult) as usize] += 1;
+            board[((line.0 .0 + i * x_mult) * num_cols + line.0 .1 + i * y_mult) as usize] += 1;
         }
     }
 
@@ -107,7 +102,7 @@ fn do_work(
     num_over_1
 }
 
-fn calc_board(board: &[usize], dest: &mut usize) {
+fn calc_board(board: &[isize], dest: &mut usize) {
     for space in board {
         if *space > 1 {
             *dest += 1;
