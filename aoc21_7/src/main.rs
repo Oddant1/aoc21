@@ -46,7 +46,7 @@ fn do_work2(crabs: &[usize], max_dist: usize) -> usize {
     for crab in crabs {
         for pos in 0..max_dist {
             let num_steps = (*crab as isize - pos as isize).abs() as usize;
-            dist_sums[pos] += (1..num_steps + 1).fold(0, |a, b| a + b);
+            dist_sums[pos] += ((num_steps + 1) as f32 * (num_steps as f32 / 2.0)) as usize;
         }
     }
 
