@@ -28,11 +28,7 @@ fn main() {
             outputs.push(output);
         }
 
-        println!(
-            "Result 1 for file at path {} is {}",
-            fp,
-            do_work1(&outputs)
-        );
+        println!("Result 1 for file at path {} is {}", fp, do_work1(&outputs));
 
         println!(
             "Result 2 for file at path {} is {}",
@@ -125,8 +121,16 @@ fn calc_value(outputs: &[&str], mappings: [&str; 10]) -> usize {
 
     'outer: for output in outputs {
         for (i, mapping) in mappings.iter().enumerate() {
-            let first = if output.len() >= mapping.len() { output } else { mapping };
-            let second = if output.len() < mapping.len() { output } else { mapping };
+            let first = if output.len() >= mapping.len() {
+                output
+            } else {
+                mapping
+            };
+            let second = if output.len() < mapping.len() {
+                output
+            } else {
+                mapping
+            };
 
             if diff(first, second) == 0 {
                 val += i * mult;
