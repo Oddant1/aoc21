@@ -2,8 +2,10 @@ use std::fs;
 
 const FPS: [&str; 2] = ["./data/test.txt", "./data/input.txt"];
 const RADIX: u32 = 10;
+const MAX_HEIGHT: usize = 9;
+const CHECKED: usize = 10;
 
-type Board = Vec<Vec<(usize, bool)>>;
+type Board = Vec<Vec<usize>>;
 
 fn main() {
     for fp in FPS {
@@ -13,10 +15,10 @@ fn main() {
         let mut board: Board = Vec::new();
 
         for line in contents {
-            let mut row: Vec<(usize, bool)> = Vec::new();
+            let mut row: Vec<usize> = Vec::new();
 
             for num in line.chars() {
-                row.push((num.to_digit(RADIX).unwrap() as usize, false));
+                row.push(num.to_digit(RADIX).unwrap() as usize);
             }
 
             board.push(row);
@@ -42,23 +44,27 @@ fn do_work1(board: Board) -> (usize, usize) {
 
     for (row_idx, row) in board.iter().enumerate() {
         for (col_idx, num) in row.iter().enumerate() {
-            if row_idx > 0 && num.0 >= board[row_idx - 1][col_idx].0 {
+            if row_idx > 0 && num >= &board[row_idx - 1][col_idx] {
                 continue;
             }
-            if row_idx < num_rows - 1 && num.0 >= board[row_idx + 1][col_idx].0 {
+            if row_idx < num_rows - 1 && num >= &board[row_idx + 1][col_idx] {
                 continue;
             }
-            if col_idx > 0 && num.0 >= board[row_idx][col_idx - 1].0 {
+            if col_idx > 0 && num >= &board[row_idx][col_idx - 1] {
                 continue;
             }
-            if col_idx < num_cols - 1 && num.0 >= board[row_idx][col_idx + 1].0 {
+            if col_idx < num_cols - 1 && num >= &board[row_idx][col_idx + 1] {
                 continue;
             }
 
-            sum1 += num.0 + 1;
-            let basin_size =
-                calc_basin_size(&mut working_board, row_idx, col_idx, num_rows, num_cols);
-            basins.push(basin_size)
+            sum1 += num + 1;
+            basins.push(calc_basin_size(
+                &mut working_board,
+                row_idx,
+                col_idx,
+                num_rows,
+                num_cols,
+            ));
         }
     }
 
@@ -74,30 +80,18 @@ fn calc_basin_size(
     num_cols: usize,
 ) -> usize {
     let mut size = 1;
-    working_board[row_idx][col_idx].1 = true;
+    working_board[row_idx][col_idx] = CHECKED;
 
-    if col_idx > 0
-        && working_board[row_idx][col_idx - 1].0 != 9
-        && working_board[row_idx][col_idx - 1].1 != true
-    {
+    if col_idx > 0 && working_board[row_idx][col_idx - 1] < MAX_HEIGHT {
         size += calc_basin_size(working_board, row_idx, col_idx - 1, num_rows, num_cols)
     }
-    if col_idx < num_cols - 1
-        && working_board[row_idx][col_idx + 1].0 != 9
-        && working_board[row_idx][col_idx + 1].1 != true
-    {
+    if col_idx < num_cols - 1 && working_board[row_idx][col_idx + 1] < MAX_HEIGHT {
         size += calc_basin_size(working_board, row_idx, col_idx + 1, num_rows, num_cols)
     }
-    if row_idx > 0
-        && working_board[row_idx - 1][col_idx].0 != 9
-        && working_board[row_idx - 1][col_idx].1 != true
-    {
+    if row_idx > 0 && working_board[row_idx - 1][col_idx] < MAX_HEIGHT {
         size += calc_basin_size(working_board, row_idx - 1, col_idx, num_rows, num_cols)
     }
-    if row_idx < num_rows - 1
-        && working_board[row_idx + 1][col_idx].0 != 9
-        && working_board[row_idx + 1][col_idx].1 != true
-    {
+    if row_idx < num_rows - 1 && working_board[row_idx + 1][col_idx] < MAX_HEIGHT {
         size += calc_basin_size(working_board, row_idx + 1, col_idx, num_rows, num_cols)
     }
 
