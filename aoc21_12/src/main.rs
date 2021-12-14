@@ -18,27 +18,27 @@ fn main() {
 
         for line in lines {
             let mapping: Vec<&str> = line.split("-").collect();
-            let key = mapping[0];
-            let value = mapping[1];
+            let from = mapping[0];
+            let to = mapping[1];
 
-            if !layout.contains_key(key) {
+            if !layout.contains_key(from) {
                 let mut values: Vec<&str> = Vec::new();
-                values.push(value);
+                values.push(to);
 
-                layout.insert(key, values);
+                layout.insert(from, values);
             } else {
-                let map = layout.get_mut(key).unwrap();
-                map.push(value);
+                let map = layout.get_mut(from).unwrap();
+                map.push(to);
             }
 
-            if !layout.contains_key(value) {
+            if !layout.contains_key(to) {
                 let mut values: Vec<&str> = Vec::new();
-                values.push(key);
+                values.push(from);
 
-                layout.insert(value, values);
+                layout.insert(to, values);
             } else {
-                let map = layout.get_mut(value).unwrap();
-                map.push(key);
+                let map = layout.get_mut(to).unwrap();
+                map.push(from);
             }
         }
 
