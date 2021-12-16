@@ -15,10 +15,10 @@ fn main() {
 
         let mut line_idx = 0;
         while lines[line_idx] != "" {
-            let mut coord = lines[line_idx].split(",");
+            let coord: Vec<&str> = lines[line_idx].split(",").collect();
             let coord: (usize, usize) = (
-                coord.next().unwrap().parse().unwrap(),
-                coord.next().unwrap().parse().unwrap(),
+                coord[0].parse().unwrap(),
+                coord[1].parse().unwrap(),
             );
 
             if coord.0 > max_x {
@@ -37,8 +37,8 @@ fn main() {
         line_idx += 1;
 
         while line_idx < lines.len() {
-            let mut fold = lines[line_idx].split(" ").last().unwrap().split("=");
-            let fold: (&str, usize) = (fold.next().unwrap(), fold.next().unwrap().parse().unwrap());
+            let fold: Vec<&str> = lines[line_idx].split(" ").last().unwrap().split("=").collect();
+            let fold: (&str, usize) = (fold[0], fold[1].parse().unwrap());
 
             folds.push(fold);
             line_idx += 1;
